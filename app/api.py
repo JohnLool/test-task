@@ -11,14 +11,14 @@ async def moderate_image(file: UploadFile = File(...)):
     if file.content_type not in settings.allowed_types:
         raise HTTPException(400, detail=f"File type {file.content_type} not allowed")
 
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(timeout=30.0) as client:
         try:
             response = await client.post(
                 settings.api_url,
                 files={"image": (file.filename, file.file, file.content_type)},
             )
         except httpx.RequestError as e:
-            raise HTTPException(500, detail=f"{e.__class__.__name__}: {str(e)}")
+            raise HTTPException(500, detail=f"Request error: {e.__class__.__name__}")
 
     if response.status_code != 200:
         raise HTTPException(500, detail="API error")
